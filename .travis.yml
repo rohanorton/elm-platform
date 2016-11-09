@@ -1,5 +1,9 @@
 sudo: false
 
+cache:
+  directories:
+    - sysconfcpus
+
 addons:
   apt:
     sources:
@@ -15,9 +19,9 @@ addons:
 env:
   matrix:
     - ELM_VERSION=master TARGET_NODE_VERSION=node
-    - ELM_VERSION=master TARGET_NODE_VERSION=0.10
-    - ELM_VERSION=0.16 TARGET_NODE_VERSION=node
-    - ELM_VERSION=0.16 TARGET_NODE_VERSION=0.10
+    - ELM_VERSION=master TARGET_NODE_VERSION=4.0.0
+    - ELM_VERSION=0.17 TARGET_NODE_VERSION=node
+    - ELM_VERSION=0.17 TARGET_NODE_VERSION=4.0.0
 
   global:
     - secure: "RY4A5Bj0tN7rscwPh6eDJUmf2qWW6lXPBQrD74vg3hB1ubloCRuoXvBD8evUSQg6Kb1D7Dqi3FNpZmt9In7Tiz3Xy6Vb4Q0pbh1r8rq97ZuFFbxzPVRL2QuyYuqQfvsfoal4NVxGyhfTaLh1tCC/G6CjCjGDRXFcqhcz+CR0cEI="
@@ -26,6 +30,16 @@ before_install:
   - if [ ${TRAVIS_OS_NAME} == "osx" ];
     then brew update; brew install cabal-install; brew install nvm; mkdir ~/.nvm; export NVM_DIR=~/.nvm; source $(brew --prefix nvm)/nvm.sh; else
     export PATH=/opt/ghc/7.10.1/bin:/opt/cabal/1.22/bin:$PATH; curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash;
+    fi
+  - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - | # epic build time improvement - see https://github.com/elm-lang/elm-compiler/issues/1473#issuecomment-245704142
+    if [ ! -d sysconfcpus/bin ];
+    then
+      git clone https://github.com/obmarg/libsysconfcpus.git;
+      cd libsysconfcpus;
+      ./configure --prefix=$TRAVIS_BUILD_DIR/sysconfcpus;
+      make && make install;
+      cd ..;
     fi
 
 install:
@@ -43,7 +57,7 @@ before_script:
   - cd installers
 
 script:
-  - runhaskell BuildFromSource.hs $ELM_VERSION
+  - $TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 runhaskell BuildFromSource.hs $ELM_VERSION
   - cd Elm-Platform/*/.cabal-sandbox/bin
   - ./elm-make --help
   - ./elm-repl --help
