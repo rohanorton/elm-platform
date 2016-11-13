@@ -2,6 +2,7 @@ sudo: false
 
 os:
   - linux
+  - osx
 
 cache:
   directories:
@@ -31,7 +32,7 @@ env:
 
 before_install:
   - if [ ${TRAVIS_OS_NAME} == "osx" ];
-    then brew update; brew install cabal-install; brew install nvm; mkdir ~/.nvm; export NVM_DIR=~/.nvm; source $(brew --prefix nvm)/nvm.sh; else
+    then brew update; brew install https://gist.githubusercontent.com/felixbuenemann/ccc7cf3797e8f2513b80/raw/fea13175bd982783abc8e4b4fea767620c154f3a/ghc.rb; brew install nvm; mkdir ~/.nvm; export NVM_DIR=~/.nvm; source $(brew --prefix nvm)/nvm.sh; else
     export PATH=/opt/ghc/7.10.1/bin:/opt/cabal/1.22/bin:$PATH; curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash;
     fi
   - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
